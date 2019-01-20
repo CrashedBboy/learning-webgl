@@ -3,14 +3,28 @@ const canvas = document.querySelector("#glCanvas");
 // initialize gl context
 const gl = canvas.getContext("webgl");
 
+// if the browser doesn't support WebGL, the variable would be null (returned by getContext())
 if (!gl) {
     console.error("Unable to initialize WebGL. Your browser or machine may not support it.");
 }
 
+// In shader codes, qualifiers give variables special meaning:
+// 1.attribute - a read-only global variable passed from WebGL application, this qualifier can 
+//   only be used in vertex shader. It changes per vertex.
+// 2.const - constant of compile time.
+// 3.uniform - a read-only gloval variable passed from WebGL application and can be used in both
+//   vertex shader and fragment shader. It changes per primitive.
+// 4.varying - used for interpolated data between a vertex shader and a fragment shader.
+//   Available for writing in the vertex shader, and read-only in a fragment shader
+//
+// see also: http://www.lighthouse3d.com/tutorials/glsl-12-tutorial/data-types-and-variables/
+
 const vsSource = `
 
+    // VERTEX SHADER
     attribute vec4 aVertexPosition;
 
+    // uModelViewMatrix is a combination of view_matrix(obj space->world space) * model_matrix(camera's view)
     uniform mat4 uModelViewMatrix;
     uniform mat4 uProjectionMatrix;
 
@@ -21,6 +35,7 @@ const vsSource = `
 
 const fsSource = `
     
+    // FRAGMENT SHADER (or pixel shader)
     void main() {
         gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
     }
@@ -59,12 +74,17 @@ function initShaderProgram(gl, vsSource, fsSource) {
 }
 
 function loadShader(gl, type, source) {
+
+    // create a WebGLShader, parameter type can be either gl.VERTEX_SHADER or gl.FRAGMENT_SHADER
     const shader = gl.createShader(type);
 
+    // set shader source code
     gl.shaderSource(shader, source);
 
+    // compile shader into binary data so that it can be used in WebGLProgram
     gl.compileShader(shader);
 
+    // status will be either true or false
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
         console.error('An error occurred compiling the shaders: ' + gl.getShaderInfoLog(shader));
         return null;
