@@ -19,5 +19,6 @@ most of the code come from the existing tutorial.
 * [WebGL Fundamentals](https://webglfundamentals.org/)
 
 some basic knowledge:
+* [WebGL architecture: How WebGL works?](https://stackoverflow.com/questions/7328472/how-webgl-works)
 * [Depth testing](https://learnopengl.com/Advanced-OpenGL/Depth-testing)
 * [OpenGL Projection Matrix](http://www.songho.ca/opengl/gl_projectionmatrix.html)
