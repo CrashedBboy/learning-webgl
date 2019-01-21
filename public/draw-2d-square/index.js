@@ -46,6 +46,8 @@ const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
 const programInfo = {
     program: shaderProgram,
     attributeLocations: {
+
+        // get location of variable 'aVertexPosition' in shader
         vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition')
     },
     uniformLocations: {
@@ -54,13 +56,16 @@ const programInfo = {
     }
 };
 
-drawScene(gl, programInfo, initBuffer(gl));
+initBuffer(gl);
+drawScene(gl, programInfo);
 
 function initShaderProgram(gl, vsSource, fsSource) {
     const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
     const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
 
+    // create and initilaize a WebGLProgram object, which is a combination of compiled vertex shader and fragment shader
     const shaderProgram = gl.createProgram();
+
     gl.attachShader(shaderProgram, vertexShader);
     gl.attachShader(shaderProgram, fragmentShader);
     gl.linkProgram(shaderProgram);
@@ -95,8 +100,10 @@ function loadShader(gl, type, source) {
 
 function initBuffer(gl) {
 
+    // create a WebGLBuffer storing data (such as vertices or colors).
     const positionBuffer = gl.createBuffer();
 
+    // bind the buffer to a specific buffer(binding point)
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 
     const positions = [
@@ -106,6 +113,7 @@ function initBuffer(gl) {
         1, 1
     ];
 
+    // set ARRAY_BUFFER and value (vertices)
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 
     return {
@@ -113,27 +121,45 @@ function initBuffer(gl) {
     };
 }
 
-function drawScene(gl, programInfo, buffers) {
+function drawScene(gl, programInfo) {
+
+    // set a color value used for clean color buffer when calling clear() function
+    // (means every value in color buffer will be cleared/set to rgba(0,0,0,1))
     gl.clearColor(0.0, 0.0, 0.0, 1.0);
+
+    // set a depth value used for clean depth buffer when calling clear() function
     gl.clearDepth(1.0);
+
     gl.enable(gl.DEPTH_TEST);
+
+    // specify a method to determine depth value will pass the testing, ex: gl.NEVER, gl.LESS, gl.EQUAL, gl.ALWAYS...etc.
     gl.depthFunc(gl.LEQUAL);
 
     // clear the canvas before we draw it
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-    const fieldOfView = 45 * (Math.PI / 180);
+    const fieldOfView = 45 * (Math.PI / 180); // in radians
     const aspect = gl.canvas.clientWidth / gl.canvas.clientHeight;
     const zNear = 0.1;
     const zFar = 100;
 
     const projectionMatrix = glMatrix.mat4.create();
 
+    // generates a perspective projection matrix with the given bounds.
+    // here we use the library glMatrix.js, document link: http://glmatrix.net/docs/module-mat4.html
     glMatrix.mat4.perspective(projectionMatrix, fieldOfView, aspect, zNear, zFar);
 
+    // create a Float32Array(16) indentity matrix.
     const modelViewMatrix = glMatrix.mat4.create();
 
+    // parameters: (destination:mat4, from:mat4, translation:vec3)
+    // translation:vec3 [0, 0, -6] means translating 6 along z-axis
     glMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, [0, 0, -6]);
+    // translation result(modelViewMatrix) would be
+    // [1, 0, 0, 0]
+    // [0, 1, 0, 0]
+    // [0, 0, 1, 0]
+    // [0, 0, -6,0]
 
     // tell WebGL how to pull out the positions from buffer into vertexPosition attribute
     {
@@ -143,7 +169,9 @@ function drawScene(gl, programInfo, buffers) {
         const stride = 0; // '0' to use numComponents instead
         const offset = 0; // start from position 0 of the buffer
 
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.position);
+        // binds the buffer currently bound to gl.ARRAY_BUFFER 
+        // to a generic vertex attribute(to vertexPosition of shader) of the current vertex buffer object
+        // and specifies its layout.
         gl.vertexAttribPointer(
             programInfo.attributeLocations.vertexPosition,
             numComponents,
@@ -153,16 +181,20 @@ function drawScene(gl, programInfo, buffers) {
             offset
         );
 
+        // since attributes cannot be used unless enabled, and are disabled by default,
+        // we need to call enableVertexAttribArray() to enable individual attributes so that they can be used
         gl.enableVertexAttribArray(
             programInfo.attributeLocations.vertexPosition);
 
     }
 
+    // sets the specified WebGLProgram as part of the current rendering state
     gl.useProgram(programInfo.program);
 
+    // specify matrix values for uniform variables
     gl.uniformMatrix4fv(
         programInfo.uniformLocations.projectionMatrix,
-        false,
+        false, // transpose or not
         projectionMatrix
     );
 
@@ -175,6 +207,8 @@ function drawScene(gl, programInfo, buffers) {
     {
         const offset = 0;
         const vertexCount = 4;
+
+        // draw in triangle trip mode, see: https://en.wikipedia.org/wiki/Triangle_strip
         gl.drawArrays(gl.TRIANGLE_STRIP, offset, vertexCount);
     }
 }
