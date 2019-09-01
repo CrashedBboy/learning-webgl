@@ -1,0 +1,21 @@
+{
+  "name": "learning-webgl",
+  "version": "1.0.0",
+  "description": "basic code of webgl fundamental",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CrashedBboy/learning-webgl.git"
+  },
+  "author": "crashedbboy",
+  "bugs": {
+    "url": "https://github.com/CrashedBboy/learning-webgl/issues"
+  },
+  "homepage": "https://github.com/CrashedBboy/learning-webgl#readme",
+  "dependencies": {
+    "http-server": "^0.11.1"
+  }
+}
